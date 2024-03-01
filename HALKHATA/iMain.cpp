@@ -344,7 +344,7 @@ void invoice_mouse(int mx,int my){
 						toggle_generate = 1;
 						position = 0;
 						generate_invoice();
-						//count++;
+						
 					}
 				}
 			
@@ -546,9 +546,9 @@ int countTotalInvoices() {
 int min(int a, int b) {
     return a < b ? a : b;
 }
-// Global variables for pagination
+
 int currentPage = 0;
-const int invoicesPerPage = 1;  // Adjust this value based on your interface
+const int invoicesPerPage = 1;  
 
 void search_iv_page() {
 
@@ -593,7 +593,6 @@ void search_iv_page() {
    
     }
 	if (invoice_count == 0) {
-            // If no invoices were found, display a message
             iText(rx1 - 10, ry1, "Sorry, no invoices found for:", GLUT_BITMAP_TIMES_ROMAN_24);
             iText(rx1 + 100 + 50 * 4, ry1, name, GLUT_BITMAP_TIMES_ROMAN_24);
 			 back_button();
@@ -606,22 +605,17 @@ void search_iv_page() {
 
 // Function to handle mouse click events for pagination buttons
 void handlePaginationButtonClick(int mx, int my) {
-
-        // Check if the click is within the previous page button
         if (mx >= rx1 && mx <= rx1 + 100 && my >= ry1 + 80 && my <= ry1 + 80+35) {
             if (currentPage > 0) {
                 currentPage--; // Move to the previous page
-                // Redraw the screen to display the previous page
                 iClear();
                 search_iv_page();
             }
         }
-        // Check if the click is within the next page button
         else if (mx >= rx1 + 110 && mx <= rx1 + 210 && my >= ry1 + 80 && my <= ry1 + 80+35) {
             int totalPages = ceil((double)countTotalInvoices() / invoicesPerPage);
             if (currentPage < totalPages - 1) {
                 currentPage++; // Move to the next page
-                // Redraw the screen to display the next page
                 iClear();
                 search_iv_page();
             }
