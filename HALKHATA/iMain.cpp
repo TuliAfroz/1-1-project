@@ -1,3 +1,9 @@
+
+//halkhata//
+//by:sadia tuli
+//supervised by: Rifat Rahman,lecturer,IAT,BUET
+
+
 #include"iGraphics.h"
 #include<math.h>
 #include<stdlib.h>
@@ -6,7 +12,11 @@
 
 FILE *shop_file;
 FILE *info_customer;
+FILE *supplier_info;
+
 #define MAX_INVOICES 100
+#define MAX_SUPPLIERS 100
+
 struct customers
 {
 	char customer[50];
@@ -32,6 +42,12 @@ struct orders
 	struct items itm[50];
 };
 
+struct Supplier
+{
+	char comp[100];
+	char manager_phone[12];
+};
+
 struct customers buyer;
 struct orders ord;
 int opt, n;
@@ -39,6 +55,11 @@ int opt, n;
 struct customers customer;
 struct customers record1;
 struct orders order;
+
+struct Supplier suppliers[MAX_SUPPLIERS];
+int num_suppliers = 0;
+char companys[100];
+char manager_phones[12];
 
 float total = 0;
 float paid;
@@ -70,6 +91,12 @@ int color = 0;
 // found is initialized to values other than 0 or 1 because of conditions in functions
 int found = 3;
 int search_called = 0;
+int num_reports = 0;  // number of orders in file
+float daily_sold = 0; // variable for sum of prices
+int quantity = 0;	  // total items sold that day
+float daily_paid = 0; // total paid by buyers that day
+float daily_due = 0;  // total of dues that day
+
 
 
 
@@ -98,7 +125,7 @@ void textbox(int x1, int y1, char str[])
 }
 
 void backMouse(int mx,int my){
-	if (mx >= rx1 + 420 && mx <= rx1 +500 && my >= ry1-435 && my <= ry1-400)
+	if (mx >= 908 && mx <= 988 && my >= 770 && my <= 805)
 			{
 				scene = 0;
 				total = 0;
@@ -111,19 +138,144 @@ void backMouse(int mx,int my){
 			}
 }
 void back_button()
-{
-	iSetColor(255, 255, 20);
-	iRectangle(rx1 + 420, ry1 - 435, 80, 35);
-	iText(rx1 + 425, ry1 - 425, "Home", GLUT_BITMAP_TIMES_ROMAN_24);
+{   
+	iText(5,780,"Press Esc to exit.",GLUT_BITMAP_HELVETICA_12);
+	iRectangle(908, 770, 80, 35);
+	iText(915, 780, "Menu", GLUT_BITMAP_TIMES_ROMAN_24);
 }	
 
+// void addSupplier(const char *name, const char *phone) {
+//     if (num_suppliers < MAX_SUPPLIERS) {
+//         supplier_info = fopen("suppliers.txt", "a");
+//         if (supplier_info != NULL) {
+//             fprintf(supplier_info, "%s %s\n", companys, manager_phones);
+//             fclose(supplier_info);
+//             strcpy(suppliers[num_suppliers].comp, name);
+//             strcpy(suppliers[num_suppliers].manager_phone, phone);
+//             num_suppliers++;
+//         // } else {
+//         //     printf("Error: Unable to open file for writing.\n");
+//          }
+//     // } else {
+//     //     printf("Error: Maximum number of suppliers reached.\n");
+//     }
+// }
+
+void readSuppliers(struct Supplier suppliers[], int *num_suppliers) {
+	int i=0;
+    supplier_info= fopen("suppliers.txt", "r");
+    if (supplier_info != NULL) {
+        while (fgets(suppliers[i].comp, sizeof(suppliers[i].comp), supplier_info) != NULL &&
+           fgets(suppliers[i].manager_phone, sizeof(suppliers[i].manager_phone), supplier_info) != NULL) {
+        suppliers[i].comp[strcspn(suppliers[i].comp, "\n")] = '\0'; // Remove trailing newline
+        suppliers[i].manager_phone[strcspn(suppliers[i].manager_phone, "\n")] = '\0'; // Remove trailing newline
+        ++i;
+    }
+    *num_suppliers = i;
+        //fclose(supplier_info);
+    } 
+// 	else {
+//         printf("Error: Unable to open file for reading.\n");
+//     }
+ }
+
+void drawSuppliers() {
+	
+    // readSuppliers();
+    char str_sname[100];
+	char str_sphone[15];
+	int i = 0;
+	// sprintf(str_sname, "%s", suppliers[i].comp);
+	// sprintf(str_sphone, "%s", suppliers[i].manager_phone);
+     iSetColor(100, 20, 20);
+	iRectangle(0, 0, x, y);
+	iFilledRectangle(0, 0, x, y);
+	iSetColor(255,255,255);
+	iText(rx1, ry1 - 50 * 1.5, "Company Name", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1 + 80 * 3, ry1 - 50 * 1.5, "Manager Phone No.", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1, ry1 - 50 * 2.5, "qwer", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1 + 80 * 3, ry1 - 50 * 2.5, "123", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1, ry1 - 50 * 3.5, "asd", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1 + 80 * 3, ry1 - 50 * 3.5, "344", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1, ry1 - 50 * 4.5, "bcd", GLUT_BITMAP_HELVETICA_18);
+	iText(rx1 + 80 * 3, ry1 - 50 * 4.5, "128", GLUT_BITMAP_HELVETICA_18);
+   //for (int i = 0; i < num_suppliers; i++) {
+		sprintf(str_sname, "%s", suppliers[i].comp);
+		//printf("%s",str_sname);
+	    sprintf(str_sphone, "%s", suppliers[i].manager_phone);
+		iSetColor(255,255,255);
+        iText(rx1, ry1- i * 60, str_sname, GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(rx1, ry1 - i * 60,str_sphone, GLUT_BITMAP_TIMES_ROMAN_24);
+   // }
+   i++;
+   sprintf(str_sname, "%s", suppliers[i].comp);
+	    sprintf(str_sphone, "%s", suppliers[i].manager_phone);
+		iSetColor(255,255,255);
+        iText(rx1, ry1- i * 60, str_sname, GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(rx1, ry1 - i * 60,str_sphone, GLUT_BITMAP_TIMES_ROMAN_24);
+   i++;
+   sprintf(str_sname, "%s", suppliers[i].comp);
+	    sprintf(str_sphone, "%s", suppliers[i].manager_phone);
+		iSetColor(255,255,255);
+        iText(rx1, ry1- i * 60, str_sname, GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(rx1, ry1 - i * 60,str_sphone, GLUT_BITMAP_TIMES_ROMAN_24);
+   iSetColor(255,255,255);
+	back_button();
+
+
+}
+
+void aboutpage(){
+	iShowBMP(0,0,"pictures\\aboutpage.bmp");
+	back_button();
+	
+}
 void home_page(){
+	iSetColor(100, 20, 20);
+	iRectangle(0, 0, x, y);
+	iFilledRectangle(0, 0, x, y);
 	iShowBMP(rx1-50, ry1-175, "pictures\\halkhata.bmp");
     iSetColor(255, 255, 255);
 	iText(rx1, ry1 - 500, "Press right arrow to go to menu.", GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(5,780,"Press Esc to exit.",GLUT_BITMAP_HELVETICA_12);
+	// iRectangle(5,55,72,30);
+	// iText(8,60,"About",GLUT_BITMAP_TIMES_ROMAN_24);
 }
+void daily_report()
+{
 
+	shop_file = fopen("shop_bill.txt", "r");
+
+	
+
+	while (fread(&order, sizeof(struct orders), 1, shop_file))
+	{
+
+		if (strcmp(order.date,__DATE__) == 0)
+		{
+			num_reports++;
+			quantity += order.numOfItems;
+			daily_paid += order.paid;
+			daily_due += order.due;
+			found = 1;
+
+			
+			for (int i = 0; i < order.numOfItems; i++)
+			{
+				daily_sold += order.itm[i].qty * order.itm[i].price;
+				
+			}			
+		}
+	}
+	fclose(shop_file);
+}
 void menuMouse(int mx,int my){
+	if(mx>=5 && mx<=300 && my>=645 && my<=695){
+		scene=5;
+	}
+	if(mx>=5 && mx<=77 && my>=55 && my<=85){
+				scene=-2;
+			}
 	if (mx >= 400 && mx <= 700 && my >= 640 && my <= 690)
 			{
 				scene = 1;
@@ -145,19 +297,28 @@ void menuMouse(int mx,int my){
 			
 			else if (mx >= 400 && mx <= 700 && my >= 160 && my <= 210)
 			{
-				scene = 4;	
+				scene = 4;
+				found = 3;
+				num_reports = 0;  // number of orders in file
+				daily_sold = 0; // variable for sum of prices
+				quantity = 0;	  // total items sold that day
+				daily_paid = 0; // total paid by buyers that day
+				daily_due = 0;  // total of dues that day
+				daily_report();	
 			}
 		
 }
 
 void menu_page(){
 	
-	iSetColor(150, 30, 20);
+	
+	iSetColor(100, 20, 20);
 	iRectangle(0, 0, x, y);
 	iFilledRectangle(0, 0, x, y);
 	int rx1 = x*0.40;
 	int ry1 = y*0.50;
 	iSetColor(255, 255, 255);
+	iRectangle(5,ry1+240,dx,dy);
 	iRectangle(rx1, ry1 + 80, dx, dy);
 	iRectangle(rx1, ry1 + 240, dx, dy);
 	iRectangle(rx1, ry1 - 80, dx, dy);
@@ -165,10 +326,14 @@ void menu_page(){
 	// iSetColor(255, 255, 255);
 	//menu
 	iText(rx1+40, ry1+325, "HALKHATA", GLUT_BITMAP_TIMES_ROMAN_24);
-	iText(rx1 + 37, ry1 + 247, "1.Generate Invoice", GLUT_BITMAP_TIMES_ROMAN_24);
-	iText(rx1 + 37, ry1 + 87, "2.Search Invoices", GLUT_BITMAP_TIMES_ROMAN_24);
-	iText(rx1 + 37, ry1 - 73, "3.Find Customer", GLUT_BITMAP_TIMES_ROMAN_24);
-	iText(rx1 + 37, ry1 - 233, "4.Exit", GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(20,ry1+247,"Supplier Info",GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(rx1 + 37, ry1 + 247, "   Generate Invoice", GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(rx1 + 37, ry1 + 87, "   Search Invoices", GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(rx1 + 37, ry1 - 73, "   Find Customer", GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(rx1 + 37, ry1 - 233, "  Daily Reports", GLUT_BITMAP_TIMES_ROMAN_24);
+	iRectangle(5,55,72,30);
+	iText(8,60,"About",GLUT_BITMAP_TIMES_ROMAN_24);
+	back_button();
 }
 void InvoiceHeader(char name[50], char date[30])
 {   
@@ -344,7 +509,7 @@ void invoice_mouse(int mx,int my){
 						toggle_generate = 1;
 						position = 0;
 						generate_invoice();
-						
+						//count++;
 					}
 				}
 			
@@ -352,7 +517,9 @@ void invoice_mouse(int mx,int my){
 }
 
 void invoice_gen_page() 
-{   
+{   iSetColor(100, 20, 20);
+	iRectangle(0, 0, x, y);
+	iFilledRectangle(0, 0, x, y);
 	    iSetColor(0, 255, 0);
 		iRectangle(0, 0, x, y);
 
@@ -414,7 +581,7 @@ void invoice_gen_page()
 		if (count == 8)
 		{
 			int ry1_store = ry1;
-			iSetColor(0, 0, 0);
+			iSetColor(100, 20, 20);
 			iFilledRectangle(0, 0, x, y);
 			iSetColor(149, 33, 246);
 
@@ -435,45 +602,10 @@ void invoice_gen_page()
 	
 }
 
-// void Search_invoice()
 
-// {
-// 	//input
-// 	shop_file = fopen("shop_bill.txt", "r");
-
-// 	float tot = 0;
-// 	found=0;
-// 	while (fread(&order, sizeof(struct orders), 1, shop_file))
-// 	{
-// 		if (!strcmp(order.customer, name))
-// 		{
-// 			for (int i = 0; i < order.numOfItems; i++)
-// 			{
-				
-// 				tot += order.itm[i].qty * order.itm[i].price;
-// 			}
-// 			found = 1;
-// 			//break;
-// 		}
-// 		// else
-// 		// {
-// 		// 	found = 0;
-// 		// }
-		
-// 	}
-
-
-// 	total = tot;
-
-// 	fclose(shop_file);
-// 	if (!found){
-// 		total=0;
-// 	}
-
-// }
 void drawPaginationButtons() {
     // Draw pagination buttons
-    iSetColor(149, 33, 246);
+    iSetColor(255, 255, 255);
     iRectangle(rx1, ry1 + 80, 100, 35);
     iRectangle(rx1 + 110, ry1 + 80, 100, 35);
 
@@ -517,7 +649,7 @@ void Search_invoice()
 }
 
 void draw_invoice( char *customer, char *date,  items items[], int numOfItems, float due, float paid, int rx1, int &ry1) {
-    iSetColor(0, 0, 0);
+    iSetColor(100, 20, 20);
     iFilledRectangle(0, 0, x, y);
     iSetColor(149, 33, 246);
 
@@ -546,12 +678,14 @@ int countTotalInvoices() {
 int min(int a, int b) {
     return a < b ? a : b;
 }
-
+// Global variables for pagination
 int currentPage = 0;
-const int invoicesPerPage = 1;  
+const int invoicesPerPage = 1;  // Adjust this value based on your interface
 
 void search_iv_page() {
-
+    iSetColor(100, 20, 20);
+	iRectangle(0, 0, x, y);
+	iFilledRectangle(0, 0, x, y);
 	iSetColor(149, 33, 246);
     iRectangle(0, 0, x, y);
 
@@ -589,10 +723,12 @@ void search_iv_page() {
 			invoice_count++;
 			 drawPaginationButtons();
         }
+		iSetColor(255,255,255);
 		 back_button();
    
     }
 	if (invoice_count == 0) {
+            // If no invoices were found, display a message
             iText(rx1 - 10, ry1, "Sorry, no invoices found for:", GLUT_BITMAP_TIMES_ROMAN_24);
             iText(rx1 + 100 + 50 * 4, ry1, name, GLUT_BITMAP_TIMES_ROMAN_24);
 			 back_button();
@@ -605,17 +741,22 @@ void search_iv_page() {
 
 // Function to handle mouse click events for pagination buttons
 void handlePaginationButtonClick(int mx, int my) {
+
+        // Check if the click is within the previous page button
         if (mx >= rx1 && mx <= rx1 + 100 && my >= ry1 + 80 && my <= ry1 + 80+35) {
             if (currentPage > 0) {
                 currentPage--; // Move to the previous page
+                // Redraw the screen to display the previous page
                 iClear();
                 search_iv_page();
             }
         }
+        // Check if the click is within the next page button
         else if (mx >= rx1 + 110 && mx <= rx1 + 210 && my >= ry1 + 80 && my <= ry1 + 80+35) {
             int totalPages = ceil((double)countTotalInvoices() / invoicesPerPage);
             if (currentPage < totalPages - 1) {
                 currentPage++; // Move to the next page
+                // Redraw the screen to display the next page
                 iClear();
                 search_iv_page();
             }
@@ -676,6 +817,9 @@ void findcustomer()
 
 
 void find_c_page(){
+	iSetColor(100, 20, 20);
+	iRectangle(0, 0, x, y);
+	iFilledRectangle(0, 0, x, y);
 	iSetColor(255, 255, 255);
 	iRectangle(0, 0, x, y);
 
@@ -747,15 +891,83 @@ void find_c_mouse(int mx,int my){
 				findcustomer();
 			}
 }
-void exit_page()
-{
-	
-	exit(0);
+
+
+void dailyreport_page()
+{  
+	iSetColor(100, 20, 20);
+	iRectangle(0, 0, x, y);
+	iFilledRectangle(0, 0, x, y);
+	iSetColor(255,255,255);
+	if (search_called == 0)
+		{
+			iText(rx1, ry1+100, "=======Daily Report=======", GLUT_BITMAP_TIMES_ROMAN_24);
+
+		}
+
+		if (found == 3)
+		{
+			iText(rx1 + 80, ry1, "Record not found", GLUT_BITMAP_TIMES_ROMAN_24);
+		}
+
+		if (found == 1)
+		{
+			char str_total[100];
+			char str_paid[100];
+			char str_due[100];
+			char str_reports[100];
+
+			sprintf(str_total, "%.2f", daily_sold);
+			sprintf(str_paid, "%.2f", daily_paid);
+			sprintf(str_due, "%.2f", daily_due);
+			sprintf(str_reports, "%d", num_reports);
+
+
+
+			iText(rx1 + 80, ry1 - 3 * 30, "Date:      ", GLUT_BITMAP_HELVETICA_18);
+			iText(rx1 + 80 * 3, ry1 - 3 * 30,__DATE__, GLUT_BITMAP_HELVETICA_18);
+
+			iText(rx1 + 80, ry1 - 4 * 30, "Total orders today:      ", GLUT_BITMAP_HELVETICA_18);
+			iText(rx1 + 80 * 3, ry1 - 4 * 30, str_reports, GLUT_BITMAP_HELVETICA_18);
+
+			iText(rx1 + 80, ry1 - 5 * 30, "Total:", GLUT_BITMAP_HELVETICA_18);
+			iText(rx1 + 80 * 3, ry1 - 5 * 30, str_total, GLUT_BITMAP_HELVETICA_18);
+
+
+			iText(rx1 + 80, ry1 - 6 * 30, "Paid:", GLUT_BITMAP_HELVETICA_18);
+			iText(rx1 + 80 * 3, ry1 - 6 * 30, str_paid, GLUT_BITMAP_HELVETICA_18);
+
+			if (daily_due > 0)
+			{
+				iText(rx1 + 80, ry1 - 7 * 30, "Due:", GLUT_BITMAP_HELVETICA_18);
+				iText(rx1 + 80 * 3, ry1 - 7 * 30, str_due, GLUT_BITMAP_HELVETICA_18);
+			}
+			else
+			{
+				iText(rx1 + 80, ry1 - 7 * 30, "No Due", GLUT_BITMAP_HELVETICA_18);
+			}
+			
+			//iText(rx1, ry1 - 400, "________________________", GLUT_BITMAP_TIMES_ROMAN_24);
+		}
+
+		back_button();
 }
+
+// void dailyreport_mouse(int mx,int my){
+// 	if (mx >= 400 && mx <= 700 && my >= 240 && my <= 290)
+// 			{
+// 				scene = 4;
+				
+				
+// 			}
+// }
 
 void iDraw() {
 	//place your drawing codes here
 	iClear();
+	if(scene==-2){
+		aboutpage();
+	}
 	if(scene==-1){
 		home_page();
 	}
@@ -772,7 +984,10 @@ void iDraw() {
        find_c_page();
 	}
 	if(scene==4){
-     	exit_page();
+     	dailyreport_page();
+	}
+	if(scene==5){
+		drawSuppliers();
 	}
 }
 
@@ -792,6 +1007,11 @@ void iMouseMove(int mx, int my) {
 	*/
 void iMouse(int button, int state, int mx, int my) {
 	 if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		// if(scene==-1){
+		// 	if(mx>=5 && mx<=77 && my>=55 && my<=85){
+		// 		scene=-2;
+		// 	}
+		// }
        if(scene==0){
 		menuMouse(mx,my);
 	   }
@@ -939,7 +1159,7 @@ void iSpecialKeyboard(unsigned char key) {
 	{
 		if (key == GLUT_KEY_RIGHT){ scene = 0; }
 	}
-	if(scene>=0){
+	if(scene>=0 ){
 		if(key== GLUT_KEY_LEFT){
 			scene--;
 			total = 0;
@@ -960,4 +1180,3 @@ int main() {
 	
 	return 0;
 }
-
